@@ -36,7 +36,7 @@ export default function SideBar({ collapsed, isDark }: Props) {
     <Sider
       trigger={null}
       collapsible
-      collapsed={isMobile ? true : collapsed}
+      collapsed={isMobile ? true : collapsed} 
       theme={isDark ? "dark" : "light"}
     >
       <Menu
