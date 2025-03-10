@@ -4,37 +4,11 @@ import { Skeleton, Divider, Typography, Flex } from "antd";
 import { UseGetallSubmissions } from "../services/submissions.query";
 
 const { Title } = Typography;
-const mockData = {
-  columns: ["FullName", "Age", "Gender", "InsuranceType", "City"],
-  data: [
-    {
-      id: "1",
-      FullName: "John Doe",
-      Age: 28,
-      Gender: "Male",
-      InsuranceType: "Health",
-      City: "New York",
-    },
-    {
-      id: "2",
-      FullName: "Jane Smith",
-      Age: 32,
-      Gender: "Female",
-      InsuranceType: "Home",
-      City: "Los Angeles",
-    },
-    {
-      id: "3",
-      FullName: "Alice Brown",
-      Age: 40,
-      Gender: "Female",
-      InsuranceType: "Car",
-      City: "Chicago",
-    },
-  ],
-};
+
 export default function SubmissionContainer() {
   const { data, isLoading } = UseGetallSubmissions();
+
+  // if (!data) return <>....</>;
   return (
     <div>
       <Title level={3}>submissions</Title>
@@ -54,8 +28,8 @@ export default function SubmissionContainer() {
       ) : (
         <DynamicTable
           pageSize={5}
-          columns={mockData.columns}
-          data={mockData.data}
+          columns={data?.columns ?? []}
+          data={data?.data ?? []}
         />
       )}
     </div>
