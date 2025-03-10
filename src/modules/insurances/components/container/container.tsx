@@ -1,16 +1,20 @@
 import { UseGetFormStructure } from "../../services/insurance.query";
-import { mocData } from "../../types";
 import DynamicForm from "../dymnamicForm/dynamicForm";
+import Loading from "../skeletoneLoading/Loading";
 
 export default function Container() {
-  const { data } = UseGetFormStructure();
+  const { data, isLoading } = UseGetFormStructure();
   const handleSubmit = async (values: unknown) => {
     console.log(values);
   };
-  console.log(data);
+  const isPending = isLoading || !data;
   return (
     <div>
-      <DynamicForm formStructure={mocData["0"]} onSubmit={handleSubmit} />
+      {isPending ? (
+        <Loading />
+      ) : (
+        <DynamicForm formStructure={data["0"]} onSubmit={handleSubmit} />
+      )}
     </div>
   );
 }

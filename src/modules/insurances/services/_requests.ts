@@ -1,4 +1,5 @@
 import { http } from "../../../services/http-services";
+import { FormStructure } from "../types";
 
 const serviceName = "/forms";
 
@@ -6,7 +7,7 @@ const serviceName = "/forms";
 
 export const getInsurancesFormStructure = async () => {
   try {
-    const response = await http.get<unknown>(serviceName);
+    const response = await http.get<FormStructure[]>(serviceName);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
