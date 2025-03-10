@@ -1,7 +1,7 @@
 import { http } from "../../../services/http-services";
 import { submissionModel } from "../types/submissions.types";
 
-const serviceName = "/forms";
+const serviceName = "/api/insurance/forms";
 
 export const getSubmissions = async () => {
   try {

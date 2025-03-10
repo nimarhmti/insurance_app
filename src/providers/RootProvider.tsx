@@ -5,13 +5,16 @@ import AppContextProvider, {
   AppContext,
 } from "./context-provider/ContextProvider";
 import ThemeProvider from "./them-provider/ThemProvider";
+import { NotificationProvider } from "./notification-provider/notificationProvider";
 
 export default function RootProvider({ children }: { children: ReactNode }) {
   return (
     <RouterProvider>
       <QueryProvider>
         <AppContextProvider>
-          <AppContextConsumer>{children}</AppContextConsumer>
+          <AppContextConsumer>
+            <NotificationProvider>{children}</NotificationProvider>
+          </AppContextConsumer>
         </AppContextProvider>
       </QueryProvider>
     </RouterProvider>
