@@ -9,6 +9,8 @@ import {
   Button,
   Card,
   Space,
+  Row,
+  Col,
 } from "antd";
 import { FormField, FormStructure } from "../../types";
 import api from "../../../../config/axios";
@@ -25,18 +27,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   isLoading,
 }) => {
   const [form] = Form.useForm();
-  // state
   const [dynamicOptions, setDynamicOptions] = useState<{
     [key: string]: string[];
   }>({});
   const allValues = Form.useWatch([], form);
 
-  // Fetch dynamic options with parent path support
   const fetchDynamicOptions = async (field: FormField) => {
-    console.log(field);
     if (field.dynamicOptions) {
       const fullDependsOnPath = field.dynamicOptions.dependsOn;
-
       const dependentValue = form.getFieldValue(fullDependsOnPath);
 
       if (dependentValue && field.dynamicOptions.endpoint) {
@@ -49,7 +47,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   };
 
-  // Recursive render with parent path tracking
   const renderField = (field: FormField, parentPath?: string) => {
     const fieldPath = parentPath ? `${parentPath}.${field.id}` : field.id;
 
@@ -57,7 +54,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       case "text":
         return <Input />;
       case "date":
-        return <DatePicker form="" />;
+        return <DatePicker format="YYYY-MM-DD" />;
       case "number":
         return <Input type="number" />;
       case "select":
@@ -93,21 +90,28 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       case "group":
         return (
           <div style={{ marginLeft: "16px" }}>
-            {field.fields?.map((nestedField) => (
-              <Form.Item
-                key={nestedField.id}
-                label={nestedField.label}
-                name={fieldPath} // Use full path
-                rules={[
-                  {
-                    required: nestedField.required,
-                    message: `${nestedField.label} is required`,
-                  },
-                ]}
-              >
-                {renderField(nestedField, fieldPath)}
-              </Form.Item>
-            ))}
+            <Row gutter={[16, 16]}>
+              {field.fields?.map((nestedField) => {
+                if (!shouldRenderField(nestedField)) return null;
+                const nestedFieldPath = `${fieldPath}.${nestedField.id}`;
+                return (
+                  <Col xs={24} sm={8} key={nestedField.id}>
+                    <Form.Item
+                      label={nestedField.label}
+                      name={nestedFieldPath}
+                      rules={[
+                        {
+                          required: nestedField.required,
+                          message: `${nestedField.label} is required`,
+                        },
+                      ]}
+                    >
+                      {renderField(nestedField, fieldPath)}
+                    </Form.Item>
+                  </Col>
+                );
+              })}
+            </Row>
           </div>
         );
       default:
@@ -115,7 +119,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   };
 
-  // Handle nested visibility checks
   const shouldRenderField = (field: FormField) => {
     if (!field.visibility) return true;
     const track = field.visibility?.dependsOn;
@@ -125,7 +128,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   };
 
-  // rest the form
   const onReset = () => {
     form.resetFields();
   };
@@ -135,50 +137,32 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       <Space direction="vertical" size="middle" style={{ display: "flex" }}>
         {formStructure.map(({ fields, formId, title }) => (
           <Card title={title} size="default" key={formId}>
-            {fields.map((field) => {
-              if (field.type === "group") {
-                return (
-                  <div key={field.id}>
-                    {field.fields?.map(
-                      (nestedField) =>
-                        shouldRenderField(nestedField) && (
-                          <Form.Item
-                            key={nestedField.id}
-                            label={nestedField.label}
-                            name={nestedField.id}
-                            rules={[
-                              {
-                                required: nestedField.required,
-                                message: `${nestedField.label} is required`,
-                              },
-                            ]}
-                          >
-                            {renderField(nestedField, field.id)}
-                          </Form.Item>
-                        )
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                shouldRenderField(field) && (
-                  <Form.Item
-                    key={field.id}
-                    label={field.label}
-                    name={field.id}
-                    rules={[
-                      {
-                        required: field.required,
-                        message: `${field.label} is required`,
-                      },
-                    ]}
-                  >
-                    {renderField(field)}
-                  </Form.Item>
-                )
-              );
-            })}
+            <Row gutter={[16, 16]}>
+              {fields.map((field) => (
+                <Col
+                  xs={24}
+                  sm={field.type === "group" ? 24 : 8}
+                  key={field.id}
+                >
+                  {field.type === "group"
+                    ? renderField(field)
+                    : shouldRenderField(field) && (
+                        <Form.Item
+                          label={field.label}
+                          name={field.id}
+                          rules={[
+                            {
+                              required: field.required,
+                              message: `${field.label} is required`,
+                            },
+                          ]}
+                        >
+                          {renderField(field)}
+                        </Form.Item>
+                      )}
+                </Col>
+              ))}
+            </Row>
           </Card>
         ))}
       </Space>
@@ -192,7 +176,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           Submit
         </Button>
         <Button type="default" htmlType="button" size="large" onClick={onReset}>
-          reset
+          Reset
         </Button>
       </Space>
     </Form>
