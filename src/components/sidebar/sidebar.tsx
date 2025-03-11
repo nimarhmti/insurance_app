@@ -29,20 +29,32 @@ const menuItems = [
   },
 ];
 
+const indexsRoutes = ["/", "/insurances"];
+
 export default function SideBar({ collapsed, isDark }: Props) {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+
+  const setActiveRoute = () => {
+    const url = window.location.pathname;
+    if (indexsRoutes.includes(url)) {
+      return "insurances";
+    } else {
+      return url.replace("/", "");
+    }
+  };
+
   return (
     <Sider
       trigger={null}
       collapsible
-      collapsed={isMobile ? true : collapsed} 
+      collapsed={isMobile ? true : collapsed}
       theme={isDark ? "dark" : "light"}
     >
       <Menu
         theme={isDark ? "dark" : "light"}
         mode="inline"
-        defaultSelectedKeys={[menuItems["0"].key]}
+        defaultSelectedKeys={[setActiveRoute()]}
         items={menuItems}
         style={{ paddingTop: "12px" }}
       />

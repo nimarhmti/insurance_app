@@ -1,11 +1,11 @@
 export interface DataItem {
   id: string;
-  [key: string]: string | number;
+  [key: string]: unknown;
 }
 
 export interface TableData {
   columns: string[];
-  data: DataItem[];
+  data: DataItem[] | [];
 }
 
 export interface dynamicTableProps extends TableData {

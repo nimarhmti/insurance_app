@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { Form, Input, Select, DatePicker, Radio, Checkbox, Button } from "antd";
-import axios from "axios";
 import { FormField, FormStructure } from "../../types";
+import api from "../../../../config/axios";
 
 interface DynamicFormProps {
   formStructure: FormStructure;
+  isLoading: boolean;
   onSubmit: (values: unknown) => void;
 }
 
 const DynamicForm: React.FC<DynamicFormProps> = ({
   formStructure,
   onSubmit,
+  isLoading,
 }) => {
   const [form] = Form.useForm();
   // state
@@ -20,19 +22,19 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const allValues = Form.useWatch([], form);
 
   // Fetch dynamic options with parent path support
-  const fetchDynamicOptions = async (field: FormField, parentPath?: string) => {
+  const fetchDynamicOptions = async (field: FormField) => {
+    console.log(field);
     if (field.dynamicOptions) {
-      const fullDependsOnPath = parentPath
-        ? `${parentPath}.${field.dynamicOptions.dependsOn}`
-        : field.dynamicOptions.dependsOn;
+      const fullDependsOnPath = field.dynamicOptions.dependsOn;
 
       const dependentValue = form.getFieldValue(fullDependsOnPath);
 
       if (dependentValue && field.dynamicOptions.endpoint) {
-        const response = await axios.get(
-          `${field.dynamicOptions.endpoint}?country=${dependentValue}`
+        const response = await api.get(
+          `${field.dynamicOptions.endpoint}?${fullDependsOnPath}=${dependentValue}`
         );
-        setDynamicOptions((prev) => ({ ...prev, [field.id]: response.data }));
+        const result = response.data.states;
+        setDynamicOptions((prev) => ({ ...prev, [field.id]: result }));
       }
     }
   };
@@ -45,7 +47,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       case "text":
         return <Input />;
       case "date":
-        return <DatePicker />;
+        return <DatePicker form="" />;
       case "number":
         return <Input type="number" />;
       case "select":
@@ -57,7 +59,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 value: option,
               })
             )}
-            onFocus={() => fetchDynamicOptions(field, parentPath)}
+            onFocus={() => fetchDynamicOptions(field)}
           />
         );
       case "radio":
@@ -159,7 +161,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           )
         );
       })}
-      <Button type="primary" htmlType="submit">
+      <Button type="primary" htmlType="submit" loading={isLoading}>
         Submit
       </Button>
     </Form>

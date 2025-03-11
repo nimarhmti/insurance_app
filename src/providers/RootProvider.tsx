@@ -1,17 +1,20 @@
 import { ReactNode } from "react";
-import RouterProvider from "./router-provider/routerProvider";
-import QueryProvider from "./query-provider/queryProvider";
+import RouterProvider from "./router-provider/RouterProvider";
+import QueryProvider from "./query-provider/QueryProvider";
 import AppContextProvider, {
   AppContext,
-} from "./context-provider/contextProvider";
-import ThemeProvider from "./them-provider/themProvider";
+} from "./context-provider/ContextProvider";
+import ThemeProvider from "./them-provider/ThemProvider";
+import { NotificationProvider } from "./notification-provider/notificationProvider";
 
 export default function RootProvider({ children }: { children: ReactNode }) {
   return (
     <RouterProvider>
       <QueryProvider>
         <AppContextProvider>
-          <AppContextConsumer>{children}</AppContextConsumer>
+          <AppContextConsumer>
+            <NotificationProvider>{children}</NotificationProvider>
+          </AppContextConsumer>
         </AppContextProvider>
       </QueryProvider>
     </RouterProvider>
