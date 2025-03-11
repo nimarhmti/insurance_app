@@ -1,10 +1,20 @@
 import React, { useState } from "react";
-import { Form, Input, Select, DatePicker, Radio, Checkbox, Button } from "antd";
+import {
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Radio,
+  Checkbox,
+  Button,
+  Card,
+  Space,
+} from "antd";
 import { FormField, FormStructure } from "../../types";
 import api from "../../../../config/axios";
 
 interface DynamicFormProps {
-  formStructure: FormStructure;
+  formStructure: FormStructure[];
   isLoading: boolean;
   onSubmit: (values: unknown) => void;
 }
@@ -115,55 +125,76 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   };
 
+  // rest the form
+  const onReset = () => {
+    form.resetFields();
+  };
+
   return (
     <Form form={form} onFinish={onSubmit} layout="vertical">
-      {formStructure.fields.map((field) => {
-        if (field.type === "group") {
-          return (
-            <div key={field.id}>
-              {field.fields?.map(
-                (nestedField) =>
-                  shouldRenderField(nestedField) && (
-                    <Form.Item
-                      key={nestedField.id}
-                      label={nestedField.label}
-                      name={nestedField.id}
-                      rules={[
-                        {
-                          required: nestedField.required,
-                          message: `${nestedField.label} is required`,
-                        },
-                      ]}
-                    >
-                      {renderField(nestedField, field.id)}
-                    </Form.Item>
-                  )
-              )}
-            </div>
-          );
-        }
+      <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+        {formStructure.map(({ fields, formId, title }) => (
+          <Card title={title} size="default" key={formId}>
+            {fields.map((field) => {
+              if (field.type === "group") {
+                return (
+                  <div key={field.id}>
+                    {field.fields?.map(
+                      (nestedField) =>
+                        shouldRenderField(nestedField) && (
+                          <Form.Item
+                            key={nestedField.id}
+                            label={nestedField.label}
+                            name={nestedField.id}
+                            rules={[
+                              {
+                                required: nestedField.required,
+                                message: `${nestedField.label} is required`,
+                              },
+                            ]}
+                          >
+                            {renderField(nestedField, field.id)}
+                          </Form.Item>
+                        )
+                    )}
+                  </div>
+                );
+              }
 
-        return (
-          shouldRenderField(field) && (
-            <Form.Item
-              key={field.id}
-              label={field.label}
-              name={field.id}
-              rules={[
-                {
-                  required: field.required,
-                  message: `${field.label} is required`,
-                },
-              ]}
-            >
-              {renderField(field)}
-            </Form.Item>
-          )
-        );
-      })}
-      <Button type="primary" htmlType="submit" loading={isLoading}>
-        Submit
-      </Button>
+              return (
+                shouldRenderField(field) && (
+                  <Form.Item
+                    key={field.id}
+                    label={field.label}
+                    name={field.id}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `${field.label} is required`,
+                      },
+                    ]}
+                  >
+                    {renderField(field)}
+                  </Form.Item>
+                )
+              );
+            })}
+          </Card>
+        ))}
+      </Space>
+      <Space style={{ marginTop: "2rem" }}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          size="large"
+          loading={isLoading}
+        >
+          Submit
+        </Button>
+        <Button type="default" htmlType="button" size="large" onClick={onReset}>
+          reset
+        </Button>
+      </Space>
     </Form>
   );
 };
