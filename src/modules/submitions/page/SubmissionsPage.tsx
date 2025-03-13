@@ -1,3 +1,5 @@
+import SubmissionContainer from "../components/container/submission-container";
+
 export default function SubmissionsPage() {
-  return <div>SubmissionsPage</div>;
+  return <SubmissionContainer />;
 }

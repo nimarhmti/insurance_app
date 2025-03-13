@@ -3,14 +3,20 @@ import { notification } from "antd";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // Use Vite environment variable
   timeout: 10000,
+  // withCredentials: false,
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Credentials": true,
   },
 });
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    config.headers["Access-Control-Allow-Origin"] = "*";
+    config.headers["Access-Control-Allow-Methods"] = "*";
     return config;
   },
   (error) => {
@@ -21,7 +27,7 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    return response.data;
+    return response;
   },
   (error) => {
     if (error.response) {
