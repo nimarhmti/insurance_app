@@ -1,3 +1,15 @@
+export interface rulesModel {
+  min?: number;
+  max?: number;
+  pattern?: string; // regex for validation
+}
+
+export interface OptionModel {
+  dependsOn: string;
+  endpoint: string;
+  method: string;
+}
+
 export interface FormField {
   id: string;
   label: string;
@@ -12,16 +24,8 @@ export interface FormField {
     condition: string; // e.g., "equals"
     value: string;
   };
-  dynamicOptions?: {
-    dependsOn: string;
-    endpoint: string;
-    method: string;
-  };
-  validation?: {
-    min?: number;
-    max?: number;
-    pattern?: string; // regex for validation
-  };
+  dynamicOptions?: OptionModel;
+  validation?: rulesModel;
   fields?: FormField[]; // for nested groups
 }
 

@@ -40,7 +40,7 @@ export default function Container() {
       ) : (
         <>
           <Typography.Title level={3}>Insurances</Typography.Title>
-          <Typography.Text strong>please select a form</Typography.Text>
+
           <Divider />
           {/* Display the selected form */}
           <DynamicForm
