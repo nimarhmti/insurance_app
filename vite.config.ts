@@ -9,10 +9,11 @@ export default defineConfig({
         manualChunks: {
           // Group React-related dependencies into a separate chunk
           react: ["react", "react-dom", "react-router-dom"],
-          // Group Ant Design components into a separate chunk
-          antd: ["antd"],
-          // Group utility libraries into a separate chunk
-          lodash: ["lodash"],
+
+          // Group React Query into a separate chunk
+          reactQuery: ["@tanstack/react-query"],
+          // Group Axios into a separate chunk
+          axios: ["axios"],
         },
       },
     },
