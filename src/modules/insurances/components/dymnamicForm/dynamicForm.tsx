@@ -1,10 +1,21 @@
 import React, { useState } from "react";
-import { Form, Input, Select, DatePicker, Radio, Checkbox, Button } from "antd";
+import {
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Radio,
+  Checkbox,
+  Button,
+  Card,
+  Space,
+} from "antd";
 import { FormField, FormStructure } from "../../types";
 import api from "../../../../config/axios";
+import { Rule } from "antd/es/form";
 
 interface DynamicFormProps {
-  formStructure: FormStructure;
+  formStructure: FormStructure[];
   isLoading: boolean;
   onSubmit: (values: unknown) => void;
 }
@@ -15,6 +26,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   isLoading,
 }) => {
   const [form] = Form.useForm();
+
   // state
   const [dynamicOptions, setDynamicOptions] = useState<{
     [key: string]: string[];
@@ -23,10 +35,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   // Fetch dynamic options with parent path support
   const fetchDynamicOptions = async (field: FormField) => {
-    console.log(field);
     if (field.dynamicOptions) {
       const fullDependsOnPath = field.dynamicOptions.dependsOn;
-
       const dependentValue = form.getFieldValue(fullDependsOnPath);
 
       if (dependentValue && field.dynamicOptions.endpoint) {
@@ -47,9 +57,25 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       case "text":
         return <Input />;
       case "date":
-        return <DatePicker form="" />;
+        return (
+          <DatePicker
+            format={{
+              format: "YYYY-MM-DD",
+              type: "mask",
+            }}
+          />
+        );
       case "number":
-        return <Input type="number" />;
+        return (
+          <Input
+            type="number"
+            // Normalize the value to ensure it's a number
+            onChange={(e) => {
+              const { value, id } = e.target;
+              form.setFieldsValue({ [id]: Number(value) });
+            }}
+          />
+        );
       case "select":
         return (
           <Select
@@ -88,12 +114,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 key={nestedField.id}
                 label={nestedField.label}
                 name={fieldPath} // Use full path
-                rules={[
-                  {
-                    required: nestedField.required,
-                    message: `${nestedField.label} is required`,
-                  },
-                ]}
+                rules={getValidationRules(nestedField)} // Add validation rules
               >
                 {renderField(nestedField, fieldPath)}
               </Form.Item>
@@ -115,55 +136,108 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   };
 
+  // Get validation rules based on the field's validation object
+  const getValidationRules = (field: FormField): Rule[] => {
+    const rules: Rule[] = [];
+
+    // Required rule
+    if (field.required) {
+      rules.push({
+        required: true,
+        message: `${field.label} is required`,
+      });
+    }
+
+    // Min and max validation for numbers
+    if (field.type === "number" && field.validation) {
+      if (field.validation.min !== undefined) {
+        rules.push({
+          type: "number",
+          min: field.validation.min,
+          message: `${field.label} must be at least ${field.validation.min}`,
+        });
+      }
+      if (field.validation.max !== undefined) {
+        rules.push({
+          type: "number",
+          max: field.validation.max,
+          message: `${field.label} must be at most ${field.validation.max}`,
+        });
+      }
+    }
+
+    // Pattern validation for text fields
+    if (field.type === "text" && field.validation?.pattern) {
+      rules.push({
+        pattern: new RegExp(field.validation.pattern),
+        message: `${field.label} does not match the required pattern`,
+      });
+    }
+
+    return rules;
+  };
+
+  // Reset the form
+  const onReset = () => {
+    form.resetFields();
+  };
+
+  console.log(allValues);
   return (
     <Form form={form} onFinish={onSubmit} layout="vertical">
-      {formStructure.fields.map((field) => {
-        if (field.type === "group") {
-          return (
-            <div key={field.id}>
-              {field.fields?.map(
-                (nestedField) =>
-                  shouldRenderField(nestedField) && (
-                    <Form.Item
-                      key={nestedField.id}
-                      label={nestedField.label}
-                      name={nestedField.id}
-                      rules={[
-                        {
-                          required: nestedField.required,
-                          message: `${nestedField.label} is required`,
-                        },
-                      ]}
-                    >
-                      {renderField(nestedField, field.id)}
-                    </Form.Item>
-                  )
-              )}
-            </div>
-          );
-        }
+      <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+        {formStructure.map(({ fields, formId, title }) => (
+          <Card title={title} size="default" key={formId}>
+            {fields.map((field) => {
+              if (field.type === "group") {
+                return (
+                  <div key={field.id}>
+                    {field.fields?.map(
+                      (nestedField) =>
+                        shouldRenderField(nestedField) && (
+                          <Form.Item
+                            key={nestedField.id}
+                            label={nestedField.label}
+                            name={nestedField.id}
+                            rules={getValidationRules(nestedField)} // Add validation rules
+                          >
+                            {renderField(nestedField, field.id)}
+                          </Form.Item>
+                        )
+                    )}
+                  </div>
+                );
+              }
 
-        return (
-          shouldRenderField(field) && (
-            <Form.Item
-              key={field.id}
-              label={field.label}
-              name={field.id}
-              rules={[
-                {
-                  required: field.required,
-                  message: `${field.label} is required`,
-                },
-              ]}
-            >
-              {renderField(field)}
-            </Form.Item>
-          )
-        );
-      })}
-      <Button type="primary" htmlType="submit" loading={isLoading}>
-        Submit
-      </Button>
+              return (
+                shouldRenderField(field) && (
+                  <Form.Item
+                    key={field.id}
+                    label={field.label}
+                    name={field.id}
+                    rules={getValidationRules(field)} // Add validation rules
+                  >
+                    {renderField(field)}
+                  </Form.Item>
+                )
+              );
+            })}
+          </Card>
+        ))}
+      </Space>
+      <Space style={{ marginTop: "2rem" }}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          size="large"
+          loading={isLoading}
+        >
+          Submit
+        </Button>
+        <Button type="default" htmlType="button" size="large" onClick={onReset}>
+          Reset
+        </Button>
+      </Space>
     </Form>
   );
 };
